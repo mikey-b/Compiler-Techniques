@@ -211,8 +211,10 @@ class function_call: expression {
 	override int evaluate() {
 		import std.math;
 		import std.conv;
-		int arg_res = (cast(expression)args[0]).evaluate();
-		return to!int(sin(to!float(arg_res)));
+		auto arg_res = to!float((cast(expression)args[0]).evaluate());
+		import std.stdio;
+		writeln("Sin = ", sin(arg_res));
+		return to!int(sin(arg_res));
 	}
 }
 
