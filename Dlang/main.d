@@ -21,10 +21,12 @@ void main() {
         // This is a direct test of the expression parsing, which uses operator precedence
         // Also added evaluation of the AST tree expressions, shouldn't really be done her for a serious project.
         import expressions;
-        auto source_code = "(1+2 != 3) ? 0 : (20 * 2 == 4 * 10) ? (7*8-3) : 69";
+        //auto source_code = "(1+2 != 3) ? 0 : (20 * 2 == 4 * 10) ? (7*8-3) : 69";
+		auto source_code = "sin(10)";
         auto l = new lang_lexer(source_code);
         auto f = expression.factory(l);
         writeln("Evaluating: " ~ source_code);
+		writeln(f);
         writeln(f.evaluate());
     }
     return;

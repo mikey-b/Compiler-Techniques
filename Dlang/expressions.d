@@ -27,6 +27,7 @@ binding_power bp_lookup(token_type type) {
 
         // Postfix is always Right Associative
         case token_type.BangSign: return RightAssociative(400);
+		case token_type.LParen: return RightAssociative(500);
         default: return binding_power(0,0);
     }
 }
@@ -50,6 +51,8 @@ abstract class expression: branch_node {
         // Check to see if this is a prefix or a valid infix left-hand-side.
         if (l.front.type == token_type.Number) {
             result = new number_literal(l);
+		} else if (l.front.type == token_type.Identifier) {
+			result = new var_expression(l);
         } else if (l.front.type == token_type.LParen) {
             result = new sub_expression(l);
         
@@ -70,6 +73,11 @@ abstract class expression: branch_node {
                 result = new postfix_expression(l, result);
             } else if (l.front.type == token_type.TernaryStart) {
                 result = new ternary_expression(l, result);
+			} else if (l.front.type == token_type.LParen) {
+				import std.stdio;
+				writeln("Creating Function Call");
+				result = new function_call(l, result);
+				
 
             // --- Infix lookahead ---
             // It must be an infix operator. Anything that isn't an infix
@@ -86,10 +94,18 @@ abstract class expression: branch_node {
     abstract int evaluate();
 }
 
-
+class var_expression: expression {
+	node_t[] var;
+	
+	this(lexer_t l) {
+		match!(token_type.Identifier)(l, var);
+	}
+	override int evaluate() {
+		return 0;
+	}
+}
 
 // Below are all the expression subtypes that the factory can return
-
 class number_literal: expression {
     node_t[] value;
 
@@ -177,6 +193,27 @@ class prefix_expression: expression {
             default: assert(0);
         }
     }
+}
+
+
+class function_call: expression {
+	node_t[] func;
+	node_t[] args;
+	
+	this(lexer_t l, expression _func) {
+		import std.stdio;
+		func ~= _func;
+		match!(token_type.LParen)(l);
+		match!(expression)(l, args);
+		match!(token_type.RParen)(l);
+	}
+	
+	override int evaluate() {
+		import std.math;
+		import std.conv;
+		int arg_res = (cast(expression)args[0]).evaluate();
+		return to!int(sin(to!float(arg_res)));
+	}
 }
 
 class postfix_expression: expression {
